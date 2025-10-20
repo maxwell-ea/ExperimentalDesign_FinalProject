@@ -1,0 +1,129 @@
+/* Universal button style */
+.btn {
+    padding: 12px 28px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    background-color: #3B82F6; /* soft blue */
+    color: white;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn:hover {
+    background-color: #2563EB; /* darker on hover */
+    transform: scale(1.03);
+}
+
+.btn:disabled {
+    background-color: #9CA3AF;
+    cursor: not-allowed;
+}
+
+/* Consent screen and buttons */
+#consentScreen input[type="text"] {
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+/* Start/Consent Screen */
+.info-section {
+    background-color: #F9FAFB; /* very light gray/blue */
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border: 1px solid #E5E7EB; /* subtle border */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Subheadings inside sections */
+.info-section h2 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: #1F2937; /* darker text */
+    font-size: 18px;
+}
+
+/* Paragraphs inside sections */
+.info-section p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Nice bullet points */
+.info-section ul {
+    padding-left: 20px;
+    list-style-type: disc;
+    color: #374151; /* soft dark gray */
+}
+
+.info-section ul li {
+    margin-bottom: 6px;
+}
+
+.info-section ul li::marker {
+    color: #3B82F6; /* soft blue bullets */
+}
+
+/* Board screen container */
+#boardScreen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+}
+
+/* Grid layout */
+#app {
+    display: grid;
+    grid-template-columns: repeat(4, 150px);
+    grid-gap: 15px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+/* Hidden tile base */
+.tile {
+    padding: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 10px;
+    color: #111827; /* text color on lighter background */
+    background-color: #6B7280; /* lighter, still muted gray */
+    border: 2px solid #4B5563;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+/* Hover effect */
+.tile:hover {
+    transform: scale(1.05);
+}
+
+/* Revealed tiles */
+.tile-good {
+    border: 3px solid #1E3A8A;
+    background-color: #BBDEFB;
+    color: #1E3A8A;
+}
+
+.tile-bad {
+    border: 3px dashed #B91C1C;
+    background-color: #FCA5A5;
+    color: #B91C1C;
+}
+
+.tile-neutral {
+    border: 3px dotted #6B7280;
+    background-color: #D1D5DB;
+    color: #374151;
+}
+
+/* Modern font and background */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #F3F4F6;
+    text-align: center;
+    color: #111827;
+}

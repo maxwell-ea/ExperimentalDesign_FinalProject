@@ -1,10 +1,250 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAT Study Game</title>
+
+    <!-- Link to CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
 </head>
+
 <body>
-$END$
+
+<!-- Start / Title Screen -->
+<div id="startScreen" style="display: block; text-align: left; padding: 20px; max-width: 600px; margin: auto;">
+    <h1 style="text-align: center; margin-bottom: 20px;">Study on Human Collaboration with an Autonomous Teammate</h1>
+
+    <div class="info-section">
+        <h2>Objective of This Study</h2>
+        <p>We want to explore how humans and AI work collaboratively as a team through a word association game.</p>
+    </div>
+
+    <div class="info-section">
+        <h2>1. What You Will Do</h2>
+        <ul>
+            <li>You will play a short two-player game with an AI teammate.</li>
+            <li>During the game, the AI may make mistakes.</li>
+            <li>You will be asked to answer a few questions about your experience afterward.</li>
+        </ul>
+    </div>
+
+    <div class="info-section">
+        <h2>2. What Data We Collect</h2>
+        <ul>
+            <li>Your in-game actions and choices.</li>
+            <li>Your responses to questions or ratings about the AI.</li>
+            <li>Demographic info (e.g., age, computer experience).</li>
+            <li>Your name for matching the game data to your survey data.</li>
+        </ul>
+    </div>
+
+    <div class="info-section">
+        <h2>3. Benefits</h2>
+        <ul>
+            <li>Your participation is a contribution to research on human-AI collaboration.</li>
+            <li>This research gives us a better understanding of AI communication and social acceptance.</li>
+        </ul>
+    </div>
+
+    <div class="info-section">
+        <h2>4. Voluntary Participation</h2>
+        <ul>
+            <li><b>Participation is completely voluntary.</b> You may stop at any time without penalty.</li>
+        </ul>
+    </div>
+
+    <div class="info-section">
+        <h2>5. Privacy & Data Security</h2>
+        <ul>
+            <li>Your data will be anonymized, once data collection is complete, and stored securely.</li>
+            <li>Only the research team will access the data.</li>
+            <li>Results may be published in aggregate for classroom purposes, with no identifying info.</li>
+        </ul>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <button id="startExperimentBtn" class="btn">Begin the Study</button>
+    </div>
+</div>
+
+<!-- Consent Screen -->
+<div id="consentScreen" style="display: none; text-align: left; padding: 20px; max-width: 600px; margin: auto;">
+    <h2>Participant Information & Consent</h2>
+    <form id="participantForm">
+        <label>First Name: <input type="text" id="firstName"></label><br><br>
+        <label>Last Name: <input type="text" id="lastName"></label><br><br>
+        <label>
+            <input type="checkbox" id="consentCheckbox">
+            I have read the information on the previous page, and I consent to participate in this study.
+        </label><br><br>
+        <div style="display: flex; justify-content: space-between; max-width: 300px;">
+            <button id="backToStartBtn" class="btn">Back</button>
+            <button id="consentContinueBtn" class="btn" disabled>Continue</button>
+        </div>
+    </form>
+</div>
+
+<!-- Starting Survey Screen -->
+<div id="startSurveyScreen" style="display: none; text-align: center; padding: 20px; max-width: 600px; margin: auto;">
+    <h2>Initial Survey</h2>
+    <p>Please go to *link* to fill out the initial survey questions. You will continue to use this form throughout the experiment to answer questions about your experience.</p>
+    <button id="startSurveyContinueBtn" class="btn">Continue</button>
+</div>
+
+<!-- Instructions Screen -->
+<div id="instructionsScreen" style="display: none; text-align: left; padding: 20px; max-width: 700px; margin: auto;">
+    <h1 style="text-align: center; margin-bottom: 20px;">Game Instructions</h1>
+
+    <div class="info-section">
+        <h2>🎮 How the Game Works</h2>
+        <ul>
+            <li>Each round, you’ll see a 4 × 4 grid containing 16 words.</li>
+            <li>Each word secretly belongs to one of three categories:
+                <ul>
+                    <li>Blue words (solid border): gain points 💙</li>
+                    <li>Red words (dashed border): lose points ❌</li>
+                    <li>Gray words (dotted border): no effect on your score ⚪️️</li>
+                </ul>
+            </li>
+        </ul>
+        You won’t know which words are which — only your autonomous teammate will.
+    </div>
+
+    <div class="info-section">
+        <h2>💬 Your Teammate’s Clues</h2>
+        <ul>
+            <li>Each turn, your teammate gives you a clue: one word followed by a number.
+            </li>
+        </ul>
+
+        <em> Example: Calm 4 </em>
+
+        <ul><li>The word describes and connects several related words on the grid.</li>
+            <li>The number tells you how many words your teammate is referring to.</li>
+        </ul>
+
+
+    </div>
+
+    <div class="info-section">
+        <h2>🎯 Your Task</h2>
+        <ul>
+            <li>Pick words from the board based on the clue.</li>
+            <li>Try to find the blue words to earn points and avoid the red ones.</li>
+        </ul>
+    </div>
+
+    <div class="info-section">
+        <h2>🧠 Example</h2>
+        <ul>
+            <li>Good clue: “Calm 4” → River, Garden, Breeze, Violin (all blue and related to “calm”).</li>
+            <li>Risky clue: “Statue 2” → might point to Library and Garden (blue words), but could also make you choose Marble (a red word).</li>
+        </ul>
+    </div>
+
+    <div class="info-section">
+        <h2>🏆 Goal</h2>
+        <ul>
+            <li>Earn the highest score possible by interpreting your teammate’s clues correctly.</li>
+        </ul>
+    </div>
+
+    <div class="info-section">
+        <h2>Logistics</h2>
+        <ul>
+            <li>There will be four rounds → 1 Practice + 3 Normal Rounds.</li>
+            <li>Each normal round contains 3 different boards.</li>
+            <li>After each board, you will give a quick response on how the game went.</li>
+            <li>After each round, you will be asked to fill out a short survey.</li>
+            <li>After the final round, you will fill out a longer, final survey.</li>
+            <li>All of your responses will be confidential and anonymized once data collection in complete.</li>
+            <li><b>Reminder:</b> Your participation is optional, and you may exit the game and surveys at any time.</li>
+        </ul>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; margin-top: 20px; max-width: 300px;">
+        <button id="instructionsContinueBtn" class="btn">Continue</button>
+    </div>
+</div>
+
+<!-- Tutorial Board -->
+<div id="tutorialBoardScreen" style="display:none;">
+    <div id="tutorialApp" style="text-align:center; padding:20px;"></div>
+    <button id="tutorialNextBtn" class="btn">Next</button>
+</div>
+
+<!-- Practice Board Survey -->
+<div id="practiceSurveyScreen" style="display:none; text-align:center; padding:20px;">
+    <h2>Practice Survey</h2>
+    <p>Answer a few questions about the tutorial board.</p>
+    <button id="practiceSurveyContinueBtn" class="btn">Continue</button>
+
+    <!-- Confirmation overlay -->
+    <div id="practiceSurveyConfirm" style="display:none; margin-top: 10px;">
+        <p>Are you ready to begin the first round?</p>
+        <button id="practiceSurveyConfirmYes" class="btn">Yes</button>
+        <button id="practiceSurveyConfirmNo" class="btn">No</button>
+    </div>
+</div>
+
+<!-- Board Screen -->
+<div id="boardScreen" style="display: none;">
+    <div id="status" style="margin-bottom: 15px; font-weight: 500;">Round 1 — Board 1</div>
+    <div id="app"><!-- Board will appear here --></div>
+    <button id="nextBtn" class="btn">Next</button>
+</div>
+
+<!-- Mini Survey Screen -->
+<div id="miniSurveyScreen" style="display: none; text-align: center; padding: 20px;">
+    <h2>Board Review</h2>
+    <p>Please answer the two questions related to your experience with the game you just completed. <br>
+        Click "Continue" when done.</p>
+    <button id="miniSurveyContinueBtn" class="btn">Continue</button>
+
+    <!-- Confirmation overlay -->
+    <div id="miniSurveyConfirm" style="display:none; margin-top: 10px;">
+        <p>Are you ready to continue to the next board?</p>
+        <button id="miniSurveyConfirmYes" class="btn">Yes</button>
+        <button id="miniSurveyConfirmNo" class="btn">No</button>
+    </div>
+</div>
+
+<!-- Medium Survey Screen -->
+<div id="mediumSurveyScreen" style="display: none; text-align: center; padding: 20px;">
+    <h2>Block Survey</h2>
+    <p>Please fill out the survey for this round. Click "Continue" when done.</p>
+    <button id="mediumSurveyContinueBtn" class="btn">Continue</button>
+
+    <div id="mediumSurveyConfirm" style="display:none; margin-top: 10px;">
+        <p>Are you ready to continue to the next board?</p>
+        <button id="mediumSurveyConfirmNo" class="btn">No</button>
+        <button id="mediumSurveyConfirmYes" class="btn">Yes</button>
+    </div>
+</div>
+
+<!-- Final Survey Screen -->
+<div id="finalSurveyScreen" style="display: none; text-align: center; padding: 20px;">
+    <h2>Final Survey</h2>
+    <p>Please fill out the final survey before finishing the experiment. Click "Finish" when done.</p>
+    <button id="finalSurveyContinueBtn" class="btn">Finish</button>
+
+    <div id="finalSurveyConfirm" style="display:none; margin-top: 10px;">
+        <p>Are you ready to end the experiment?</p>
+        <button id="finalSurveyConfirmYes" class="btn">Yes</button>
+        <button id="finalSurveyConfirmNo" class="btn">No</button>
+    </div>
+</div>
+
+<!-- Final Screen -->
+<div id="finalScreen" style="display: none; text-align: center; padding: 20px;">
+    <h2>Thank you!</h2>
+    <p>You have finished the experiment.</p>
+</div>
+
+<script type="module" src="js/main.js"></script>
 </body>
 </html>
