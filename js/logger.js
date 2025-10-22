@@ -33,13 +33,16 @@ export function setupConsentScreen(onSubmitCallback) {
 }
 
 // --- Board logging ---
-export function logBoardResult(boardIndex, points, tilesFlipped, timeTakenSeconds = null, reason = '') {
+export function logBoardResult(boardIndex, apologyType, errorRate, points, tilesFlipped, timeTakenSeconds = null, reason = '', clueHistory = []) {
     const entry = {
         boardIndex,
+        apologyType,
+        errorRate,
         points,
         tilesFlipped,
         timeTakenSeconds,
-        reason
+        reason,
+        clueHistory
     };
     gameLogs.push(entry);
     console.log('Logging board:', entry);

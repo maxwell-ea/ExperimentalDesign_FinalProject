@@ -4,6 +4,8 @@
 import { BOARDS, Board } from './boardGenerator.js';
 import { logBoardResult } from './logger.js';
 import { getNextClue } from './clue.js';
+import { generateParticipantBoards } from './boardGenerator.js';
+// import { getApology } from './apology.js';
 
 // --- Element references ---
 const app = document.getElementById('app');
@@ -83,23 +85,35 @@ const finalSurveyContinueBtn = document.getElementById('finalSurveyContinueBtn')
 const finalSurveyConfirm = document.getElementById('finalSurveyConfirm');
 const finalScreen = document.getElementById('finalScreen');
 
-// --- Variables ---
-let currentBoardIndex = 0;
-let currentBoard = null; // add at top with other variables
-const blockSize = 3;
-const totalBoards = BOARDS.length;
+// --- Board Variables ---
+let currentBoardIndex = 0; //keeps track of current board index
+let currentBoard = null; // variable to be set later to hold the actual board object created for each game
+let currentBoardData = null; // variable to be set later to hold data for the current board
+const blockSize = 3; // number of boards/games per round/block
+const participantBoards = generateParticipantBoards(BOARDS, /* optional seed for testing */ 42);
+const totalBoards = participantBoards.length;
+
+// For de-bugging
+console.log(participantBoards);
+
+// --- In-Game Stats Variables ---
 let boardPoints = 0;
 let tilesFlipped = { good: 0, bad: 0, neutral: 0 };
-const timeLimit = 120;
+const timeLimit = 30;
 let boardTimer = null;
 let timeRemaining = timeLimit; // e.g., 60 seconds per board — adjust as needed
-let currentClue = null;            // Current clue object
-let currentGuessedWords = [];      // Words guessed for this clue
+let currentClue = null; // Current clue object
+let currentGuessedWords = []; // Words guessed for this clue
 let currentClueMaxGuesses = 0;
-let currentAgentClueType = 'good'; // Tracks AI clue quality for the round
+let boardClueHistory = []; // Array to store clues & guessed words for the current board
+
+// --- Game flow variables ---
+let experimentEndCallback = null;
+let nextBtnFlashInterval = null;
 
 // --- Start the game ---
-export function startGame() {
+export function startGame(onExperimentEnd = null) {
+    experimentEndCallback = onExperimentEnd;
     currentBoardIndex = 0;
 
     // Make sure the board screen is visible
@@ -134,8 +148,8 @@ function showBoard(index) {
     updateDisplay();
 
     // --- Render the board ---
-    const boardData = BOARDS[index];
-    currentBoard = new Board(boardData, (tileType, pointsEarned, tileWord) => {
+    currentBoardData = participantBoards[index];
+    currentBoard = new Board(currentBoardData, (tileType, pointsEarned, tileWord) => {
         boardPoints += pointsEarned;
         tilesFlipped[tileType] += 1;
 
@@ -149,6 +163,7 @@ function showBoard(index) {
         // --- Disable clicks for current clue ---
         if (currentClueMaxGuesses && currentGuessedWords.length >= currentClueMaxGuesses) {
             currentBoard.disableClicks = true; // prevent further clicks until next clue
+            startNextBtnFlashing(); // make next clue button flash to prompt click
         }
 
         // --- Check for board-ending condition ---
@@ -161,14 +176,14 @@ function showBoard(index) {
 
     // Generate first clue automatically
     currentGuessedWords = [];
-    currentClue = getNextClue(currentAgentClueType);
+    currentClue = getNextClue(currentBoardData.metadata.errorRate);
     currentClueMaxGuesses = currentClue.maxGuesses;
     clueEl.textContent = `Clue: ${currentClue.text} (${currentClueMaxGuesses})`;
 
     // Update round/board status
     const roundNumber = Math.floor(index / blockSize) + 1;
     const boardNumber = (index % blockSize) + 1;
-    statusEl.textContent = `Round ${roundNumber} — Board ${boardNumber} of ${blockSize}`;
+    statusEl.textContent = `Teammate ${roundNumber} — Board ${boardNumber} of ${blockSize}`;
     nextBtn.style.display = 'inline-block';
 
     // --- Start timer ---
@@ -188,7 +203,9 @@ function finishBoard(reason = 'user') {
     const totalTimeSeconds = timeLimit - timeRemaining;
 
     // Log immediately
-    logBoardResult(currentBoardIndex, boardPoints, { ...tilesFlipped }, totalTimeSeconds, reason);
+    logBoardResult(currentBoardData.boardIndex, currentBoardData.metadata.apologyType,
+        currentBoardData.metadata.errorRate, boardPoints, { ...tilesFlipped }, totalTimeSeconds, reason,
+        boardClueHistory);
 
     // Freeze board input
     if (currentBoard) currentBoard.disableClicks = true;
@@ -245,9 +262,13 @@ function finishBoard(reason = 'user') {
 
 // Called when user confirms the survey. Only advances to next board (no logging).
 function proceedToNextBoard() {
-    // Reset counters for the next board
+
+    // Reset data for the next board
     boardPoints = 0;
     tilesFlipped = { good: 0, bad: 0, neutral: 0 };
+    boardClueHistory = [];
+    nextBtnFlashInterval = null;
+
     updateDisplay();
 
     // Move to next board index and show it
@@ -282,7 +303,32 @@ function updateTimerDisplay() {
 }
 
 // --- Next button logic ---
+function startNextBtnFlashing() {
+    if (nextBtnFlashInterval) return; // already flashing
+    nextBtnFlashInterval = setInterval(() => {
+        nextBtn.style.opacity = nextBtn.style.opacity === '1' ? '0.3' : '1';
+    }, 500); // flash every 500ms
+}
+
+function stopNextBtnFlashing() {
+    if (nextBtnFlashInterval) {
+        clearInterval(nextBtnFlashInterval);
+        nextBtnFlashInterval = null;
+        nextBtn.style.opacity = '1'; // reset to fully visible
+    }
+}
+
 nextBtn.addEventListener('click', () => {
+    // If flashing, stop flashing
+    stopNextBtnFlashing();
+
+    // Add old clue to history
+    boardClueHistory.push({
+        clue: currentClue.text,
+        maxGuesses: currentClueMaxGuesses,
+        guessedWords: currentGuessedWords
+    });
+
     // Clear guesses from previous clue
     currentGuessedWords = [];
 
@@ -290,7 +336,7 @@ nextBtn.addEventListener('click', () => {
     if (currentBoard) currentBoard.disableClicks = false;
 
     // Get next clue
-    currentClue = getNextClue(currentAgentClueType);
+    currentClue = getNextClue(currentBoardData.metadata.errorRate);
     currentClueMaxGuesses = currentClue.maxGuesses;
 
     // Update UI with new clue text
@@ -344,6 +390,11 @@ finalSurveyContinueBtn.addEventListener('click', () => {
         finalSurveyConfirm.style.display = 'none';
         finalSurveyScreen.style.display = 'none';
         finalScreen.style.display = 'block';
+
+        // Notify main.js the experiment is over
+        if (typeof experimentEndCallback === 'function') {
+            experimentEndCallback();
+        }
     });
 
     document.getElementById('finalSurveyConfirmNo').addEventListener('click', () => {
