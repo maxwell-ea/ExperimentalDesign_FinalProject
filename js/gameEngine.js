@@ -106,6 +106,7 @@ let currentClue = null; // Current clue object
 let currentGuessedWords = []; // Words guessed for this clue
 let currentClueMaxGuesses = 0;
 let boardClueHistory = []; // Array to store clues & guessed words for the current board
+let playerMadeError = false;
 
 // --- Game flow variables ---
 let experimentEndCallback = null;
@@ -158,6 +159,11 @@ function showBoard(index) {
             currentGuessedWords.push(tileWord);
         }
 
+        // Flag an error if the tile flipped is 'bad'
+        if (tileType === 'bad') {
+            playerMadeError = true;
+        }
+
         updateDisplay();
 
         // --- Disable clicks for current clue ---
@@ -176,9 +182,20 @@ function showBoard(index) {
 
     // Generate first clue automatically
     currentGuessedWords = [];
-    currentClue = getNextClue(currentBoardData.metadata.errorRate);
-    currentClueMaxGuesses = currentClue.maxGuesses;
-    clueEl.textContent = `Clue: ${currentClue.text} (${currentClueMaxGuesses})`;
+    playerMadeError = false;  // ensure no leftover error
+    currentClue = getNextClue(
+        currentBoardIndex,           // boardNumber (1-indexed)
+        currentBoardData.metadata.errorRate,  // low/medium/high
+        playerMadeError,                                // playerMadeError initially false
+        boardClueHistory                       // clue history for filtering
+    );
+
+    if (currentClue) {
+        currentClueMaxGuesses = currentClue.maxGuesses;
+        clueEl.textContent = `Clue: ${currentClue.text} (${currentClueMaxGuesses})`;
+    } else {
+        clueEl.textContent = "No clues available!";
+    }
 
     // Update round/board status
     const roundNumber = Math.floor(index / blockSize) + 1;
@@ -207,7 +224,8 @@ function finishBoard(reason = 'user') {
         currentBoardData.metadata.errorRate, boardPoints, { ...tilesFlipped }, totalTimeSeconds, reason,
         boardClueHistory);
 
-    // Freeze board input
+    // Stop next button flashing and freeze board input
+    stopNextBtnFlashing()
     if (currentBoard) currentBoard.disableClicks = true;
 
     // Determine message and color based on state
@@ -336,12 +354,21 @@ nextBtn.addEventListener('click', () => {
     if (currentBoard) currentBoard.disableClicks = false;
 
     // Get next clue
-    currentClue = getNextClue(currentBoardData.metadata.errorRate);
-    currentClueMaxGuesses = currentClue.maxGuesses;
+    currentClue = getNextClue(
+        currentBoardIndex,
+        currentBoardData.metadata.errorRate,
+        playerMadeError,
+        boardClueHistory
+    );
 
-    // Update UI with new clue text
-    const clueEl = document.getElementById('clueDisplay');
-    if (clueEl) clueEl.textContent = `Clue: ${currentClue.text} (${currentClueMaxGuesses})`;
+    playerMadeError = false;
+
+    if (currentClue) {
+        currentClueMaxGuesses = currentClue.maxGuesses;
+        clueEl.textContent = `Clue: ${currentClue.text} (${currentClueMaxGuesses})`;
+    } else {
+        clueEl.textContent = "No clues available!";
+    }
 });
 
 /////////////////////////////
