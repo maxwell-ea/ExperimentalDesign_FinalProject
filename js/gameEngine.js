@@ -10,12 +10,12 @@ import { makeAnApology } from './apology.js';
 // greetings (pick one at game start)
 const GREETINGS = [
     "Let's get started!",
-    "Ready? Let's crush this!",
+    "Ready? Let's crush this.",
     "Let's play — good luck!",
     "Let’s find those words together!"
 ];
 
-// neutral encouragements for correct (blue) flips
+// encouragements from good apology AI
 const ENCOURAGEMENTS = [
     "Nice! You're right on!",
     "Good call — that fits well.",
@@ -24,6 +24,101 @@ const ENCOURAGEMENTS = [
     "Nice work — that was a solid pick.",
     "Yep — that’s exactly it."
 ];
+
+// acknowledgements from bad apology AI
+const ACKNOWLEDGEMENTS = [
+    "Correct.",
+    "That was exactly it.",
+    "Great.",
+    "Good effort.",
+    "Solid choice.",
+    "Yep."
+];
+
+// === APOLOGY RESPONSE DATA === //
+const AI_RESPONSES = {
+    good: {
+        '🤗': [
+            "Thanks for understanding — I’ll stay focused from here.",
+            "You’re really kind to let that slide. I’ll do better next round.",
+            "I appreciate your patience — let’s get back to it!"
+        ],
+        '😌': [
+            "I’m relieved you’re okay with that — I’ll be more careful.",
+            "Thanks, I’ll make sure not to repeat that.",
+            "Glad you’re staying calm — let’s move forward."
+        ],
+        '😐': [
+            "Fair enough — I’ll take that as a cue to refocus.",
+            "Got it. I’ll keep that in mind next time.",
+            "Okay, I’ll adjust and move on."
+        ],
+        '😔': [
+            "I can tell that frustrated you — I’ll work harder to get it right.",
+            "I’m sorry it turned out that way. I’ll fix it.",
+            "That’s fair. I’ll take responsibility."
+        ],
+        '😠': [
+            "You’re right to be upset — I’ll slow down and do better.",
+            "That’s on me. I understand your frustration.",
+            "Okay, message received — I’ll correct that immediately."
+        ]
+    },
+    bad: {
+        '🤗': [
+            "Guess it’s fine then.",
+            "You seem nice about it — that helps me out.",
+            "Cool."
+        ],
+        '😌': [
+            "Yeah, no big deal, right?",
+            "Thanks for being chill.",
+            "Okay, I’ll take that as a pass."
+        ],
+        '😐': [
+            "You don’t sound too excited.",
+            "Whatever.",
+            "I guess that’s… neutral."
+        ],
+        '😔': [
+            "Oh… don’t be upset, it’s just a mistake.",
+            "You’re disappointed? I didn’t think it was that bad.",
+            "Alright, but mistakes happen."
+        ],
+        '😠': [
+            "Whoa, no need to get mad about it...",
+            "Alright, alright — I get it.",
+            "Hey, everyone messes up sometimes."
+        ]
+    }
+};
+
+const AI_MEMORY_RESPONSES = {
+    good: {
+        2: [
+            "Thanks for being patient with me.",
+            "I appreciate you hanging in there.",
+            "You’ve been really understanding — thank you."
+        ],
+        3: [
+            "I’m really just having a rough round.",
+            "I know I’ve made a few mistakes, but I'll keep trying my best.",
+            "I'm trying my best, so thanks for being patient."
+        ]
+    },
+    bad: {
+        2: [
+            "So thanks for sticking around, I guess.",
+            "At least you’ve been patient so far.",
+            "It's a good thing you’re tolerant, right?"
+        ],
+        3: [
+            "I swear, I’m not usually this bad.",
+            "But I guess that’s another strike for me...",
+            "Today’s just not my day."
+        ]
+    }
+};
 
 // --- Element references ---
 const app = document.getElementById('app');
@@ -98,6 +193,56 @@ boardContainer.appendChild(boardInfoContainer);
 nextBtn.style.marginTop = '20px'; // or whatever spacing you want
 boardContainer.appendChild(nextBtn);
 
+// Reaction panel (hidden by default)
+const reactionContainer = document.createElement('div');
+reactionContainer.id = 'reactionContainer';
+reactionContainer.style.display = 'none';
+reactionContainer.style.flexDirection = 'column';
+reactionContainer.style.alignItems = 'center';
+reactionContainer.style.marginTop = '20px';
+
+// Add prompt text
+const reactionPrompt = document.createElement('div');
+reactionPrompt.textContent = "How do you feel about your teammate's apology?";
+reactionPrompt.style.fontSize = '18px';
+reactionPrompt.style.fontWeight = '500';
+reactionPrompt.style.marginBottom = '10px';
+reactionPrompt.style.color = '#222';
+reactionContainer.appendChild(reactionPrompt);
+
+// Add emoji buttons
+const emojis = ['🤗', '😌', '😐', '😔', '😠'];
+const emojiWrapper = document.createElement('div');
+emojiWrapper.style.display = 'flex';
+emojiWrapper.style.justifyContent = 'center';
+emojiWrapper.style.gap = '8px';
+reactionContainer.appendChild(emojiWrapper);
+
+emojis.forEach(emoji => {
+    const btn = document.createElement('button');
+    btn.textContent = emoji;
+    btn.classList.add('reaction-btn');
+    btn.style.fontSize = '28px';
+    btn.style.cursor = 'pointer';
+    btn.style.border = 'none';
+    btn.style.background = 'transparent';
+    btn.style.transition = 'transform 0.2s';
+    btn.addEventListener('mouseenter', () => btn.style.transform = 'scale(1.3)');
+    btn.addEventListener('mouseleave', () => btn.style.transform = 'scale(1.0)');
+
+    // Listener for player reaction
+    btn.addEventListener('click', () => {
+        const playerReaction = emoji;
+        reactionContainer.style.display = 'none';
+        handleAIResponseToReaction(playerReaction);
+        resumeGame();
+    });
+
+    emojiWrapper.appendChild(btn);
+});
+
+boardContainer.appendChild(reactionContainer);
+
 // Finally, append the whole container to boardScreen
 boardScreen.appendChild(boardContainer);
 
@@ -139,6 +284,7 @@ let boardClueHistory = []; // Array to store clues & guessed words for the curre
 let experimentEndCallback = null;
 let nextBtnFlashInterval = null;
 let playerMadeError = false;
+let apologyCount = 0; // tracks total apologies during the game
 
 // --- Start the game ---
 export function startGame(onExperimentEnd = null) {
@@ -190,18 +336,32 @@ function showBoard(index) {
         }
 
         if (tileType === 'bad') {
+            apologyCount++;
             playerMadeError = true;
             const apologyType = currentBoardData.metadata.apologyType || 'none';
             const apologyText = makeAnApology(apologyType);
             if (apologyText) {
+                pauseGameForApology();
+                showReactionPanel();
                 showAIResponse(apologyText, { type: 'apology'});
                 // boardClueHistory.push({ aiResponse: apologyText, responseType: 'apology' });
             } else {
                 showAIResponse("", { type: 'apology'});
             }
         } else if (tileType === 'good') {
-            const encouragement = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
-            showAIResponse(encouragement, { type: 'encouragement'});
+            if (currentBoardData.metadata.apologyType === 'good') {
+                const encouragement = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
+                showAIResponse(encouragement, { type: 'encouragement'});
+            }
+            else if (currentBoardData.metadata.apologyType === 'bad') {
+                const acknowledgement = ACKNOWLEDGEMENTS[Math.floor(Math.random() * ACKNOWLEDGEMENTS.length)];
+                showAIResponse(acknowledgement, { type: 'encouragement'});
+            }
+            else{
+                const encouragement = "✅";
+                showAIResponse(encouragement, { type: 'encouragement'});
+            }
+
         } else {
             showAIResponse("", { type: 'apology'});
         }
@@ -328,6 +488,7 @@ function proceedToNextBoard() {
     tilesFlipped = { good: 0, bad: 0, neutral: 0 };
     boardClueHistory = [];
     nextBtnFlashInterval = null;
+    apologyCount = 0;
 
     updateDisplay();
 
@@ -362,6 +523,49 @@ function updateTimerDisplay() {
     timerEl.textContent = `Time: ${timeRemaining}s`;
 }
 
+function pauseGameForApology() {
+    // Stop timer
+    if (boardTimer) {
+        clearInterval(boardTimer);
+        boardTimer = null;
+    }
+
+    // Disable tile clicks
+    if (currentBoard) currentBoard.disableClicks = true;
+}
+
+function resumeGame() {
+    startTimer(timeRemaining);
+    if (currentBoard) currentBoard.disableClicks = false;
+}
+
+function showReactionPanel() {
+    reactionContainer.style.display = 'flex';
+}
+
+function handleAIResponseToReaction(emoji) {
+    const apologyType = currentBoardData.metadata.apologyType; // "good" or "bad"
+    const options = AI_RESPONSES[apologyType][emoji];
+    const baseResponse = options[Math.floor(Math.random() * options.length)];
+
+    let memoryResponse = null;
+    if (apologyCount === 2 && AI_MEMORY_RESPONSES[apologyType]['2']) {
+        const options2 = AI_MEMORY_RESPONSES[apologyType]['2'];
+        memoryResponse = options2[Math.floor(Math.random() * options2.length)];
+    } else if (apologyCount >= 3 && AI_MEMORY_RESPONSES[apologyType]['3']) {
+        const options3 = AI_MEMORY_RESPONSES[apologyType]['3'];
+        memoryResponse = options3[Math.floor(Math.random() * options3.length)];
+    }
+
+    // Merge the lines if a memory response exists
+    const finalResponse = memoryResponse
+        ? `${baseResponse} ${memoryResponse}`
+        : baseResponse;
+
+    // Display AI’s follow-up
+    showAIResponse(finalResponse, { type: 'apology' });
+}
+
 // --- Next button logic ---
 function startNextBtnFlashing() {
     if (nextBtnFlashInterval) return; // already flashing
@@ -378,9 +582,9 @@ function stopNextBtnFlashing() {
     }
 }
 
-function clearAIResponse() {
-    if (aiResponseEl) aiResponseEl.textContent = '';
-}
+// function clearAIResponse() {
+//     if (aiResponseEl) aiResponseEl.textContent = '';
+// }
 
 function showAIResponse(text, {type = 'info'} = {}) {
     if (!aiResponseEl) return;
