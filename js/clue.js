@@ -119,18 +119,6 @@ export function getNextClue(boardNumber, errorRate, playerMadeError, boardClueHi
         c.linkedWords.every(word => !alreadyGuessedWords.includes(word))
     );
 
-    // // 4. Fallback: if none available, reset 1-word clues and retry
-    // if (available.length === 0) {
-    //     const oneWordClues = clues.filter(c => c.numLinked === 1);
-    //     oneWordClues.forEach(c => c.used = false);
-    //
-    //     available = clues.filter(c =>
-    //         !c.used &&
-    //         c.type === clueType &&
-    //         c.linkedWords.every(word => !alreadyGuessedWords.includes(word))
-    //     );
-    // }
-
     // --- 4. Fallback: If empty, try next-best clue types ---
     if (available.length === 0) {
         let clueTypeIndex = CLUE_TYPE_PRIORITY.indexOf(clueType);
@@ -149,11 +137,20 @@ export function getNextClue(boardNumber, errorRate, playerMadeError, boardClueHi
             triedTypes++;
         }
 
+        if (available.length === 0) {
+            const oneWordClues = clues.filter(c => c.numLinked === 1);
+            oneWordClues.forEach(c => c.used = false);
+
+            available = clues.filter(c =>
+                !c.used &&
+                c.type === clueType &&
+                c.linkedWords.every(word => !alreadyGuessedWords.includes(word))
+            );
+        }
+
         // update clueType to the type we actually found (optional)
         if (available.length > 0) clueType = available[0].type;
     }
-
-    console.log('Available clues:', available.map(c => c.text));
 
     // 5. Final fallback: if still empty, return null
     if (available.length === 0) return null;
