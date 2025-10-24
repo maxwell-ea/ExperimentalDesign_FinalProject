@@ -84,6 +84,30 @@
     margin-bottom: 20px;
 }
 
+#aiResponse {
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    max-width: 650px;          /* match board width */
+    width: 100%;               /* responsive inside max-width */
+    padding: 8px 12px;         /* optional padding for readability */
+    margin: 10px auto;         /* spacing above/below and center */
+    line-height: 1.4;
+    font-size: 16px;           /* keep readable but not huge */
+    background-color: #F3F4F6; /* subtle bg to separate from board */
+    border-radius: 8px;        /* nice rounded edges */
+    border: 1px solid #D1D5DB; /* optional subtle border */
+    text-align: left;          /* easier to read multi-line text */
+    box-sizing: border-box;    /* ensures padding doesn’t expand width */
+}
+
+@media (max-width: 600px) {
+    #aiResponse {
+        font-size: 0.9rem;
+        max-width: 95%;
+    }
+}
+
 /* Hidden tile base */
 .tile {
     padding: 20px;

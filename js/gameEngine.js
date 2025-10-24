@@ -5,7 +5,25 @@ import { BOARDS, Board } from './boardGenerator.js';
 import { logBoardResult } from './logger.js';
 import { getNextClue } from './clue.js';
 import { generateParticipantBoards } from './boardGenerator.js';
-// import { getApology } from './apology.js';
+import { makeAnApology } from './apology.js';
+
+// greetings (pick one at game start)
+const GREETINGS = [
+    "Let's get started!",
+    "Ready? Let's crush this!",
+    "Let's play — good luck!",
+    "Let’s find those words together!"
+];
+
+// neutral encouragements for correct (blue) flips
+const ENCOURAGEMENTS = [
+    "Nice! You're right on!",
+    "Good call — that fits well.",
+    "Great choice!",
+    "Great — keep it up!",
+    "Nice work — that was a solid pick.",
+    "Yep — that’s exactly it."
+];
 
 // --- Element references ---
 const app = document.getElementById('app');
@@ -43,6 +61,16 @@ clueEl.style.fontSize = '20px';
 clueEl.style.fontWeight = '500';
 clueEl.style.margin = '10px 0';
 boardContainer.insertBefore(clueEl, app); // right before the board
+
+// directly after creating clueEl
+const aiResponseEl = document.createElement('div');
+aiResponseEl.id = 'aiResponse';
+aiResponseEl.style.fontSize = '16px';
+aiResponseEl.style.fontStyle = 'italic';
+aiResponseEl.style.marginTop = '6px';
+aiResponseEl.style.minHeight = '42px'; // prevents layout shift
+aiResponseEl.style.textAlign = 'center';
+boardContainer.insertBefore(aiResponseEl, app); // put it under the clue, above the board
 
 // Create info row under the board
 const boardInfoContainer = document.createElement('div');
@@ -90,7 +118,7 @@ let currentBoardIndex = 0; //keeps track of current board index
 let currentBoard = null; // variable to be set later to hold the actual board object created for each game
 let currentBoardData = null; // variable to be set later to hold data for the current board
 const blockSize = 3; // number of boards/games per round/block
-const participantBoards = generateParticipantBoards(BOARDS, /* optional seed for testing */ 42);
+const participantBoards = generateParticipantBoards(BOARDS/*,  optional seed for testing 42*/);
 const totalBoards = participantBoards.length;
 
 // For de-bugging
@@ -99,18 +127,18 @@ console.log(participantBoards);
 // --- In-Game Stats Variables ---
 let boardPoints = 0;
 let tilesFlipped = { good: 0, bad: 0, neutral: 0 };
-const timeLimit = 30;
+const timeLimit = 120;
 let boardTimer = null;
-let timeRemaining = timeLimit; // e.g., 60 seconds per board — adjust as needed
+let timeRemaining = timeLimit;
 let currentClue = null; // Current clue object
 let currentGuessedWords = []; // Words guessed for this clue
 let currentClueMaxGuesses = 0;
 let boardClueHistory = []; // Array to store clues & guessed words for the current board
-let playerMadeError = false;
 
 // --- Game flow variables ---
 let experimentEndCallback = null;
 let nextBtnFlashInterval = null;
+let playerMadeError = false;
 
 // --- Start the game ---
 export function startGame(onExperimentEnd = null) {
@@ -146,6 +174,8 @@ function showBoard(index) {
     // --- Reset counters first ---
     boardPoints = 0;
     tilesFlipped = { good: 0, bad: 0, neutral: 0 };
+    const greeting = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+    showAIResponse(greeting, { type: 'info'});
     updateDisplay();
 
     // --- Render the board ---
@@ -159,9 +189,21 @@ function showBoard(index) {
             currentGuessedWords.push(tileWord);
         }
 
-        // Flag an error if the tile flipped is 'bad'
         if (tileType === 'bad') {
             playerMadeError = true;
+            const apologyType = currentBoardData.metadata.apologyType || 'none';
+            const apologyText = makeAnApology(apologyType);
+            if (apologyText) {
+                showAIResponse(apologyText, { type: 'apology'});
+                // boardClueHistory.push({ aiResponse: apologyText, responseType: 'apology' });
+            } else {
+                showAIResponse("", { type: 'apology'});
+            }
+        } else if (tileType === 'good') {
+            const encouragement = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
+            showAIResponse(encouragement, { type: 'encouragement'});
+        } else {
+            showAIResponse("", { type: 'apology'});
         }
 
         updateDisplay();
@@ -334,6 +376,29 @@ function stopNextBtnFlashing() {
         nextBtnFlashInterval = null;
         nextBtn.style.opacity = '1'; // reset to fully visible
     }
+}
+
+function clearAIResponse() {
+    if (aiResponseEl) aiResponseEl.textContent = '';
+}
+
+function showAIResponse(text, {type = 'info'} = {}) {
+    if (!aiResponseEl) return;
+
+    // Clear previous text (so new messages replace old ones)
+    aiResponseEl.textContent = '';
+
+    // Style tweaks per message type
+    if (type === 'apology') {
+        aiResponseEl.style.color = '#B91C1C'; // red-ish
+    } else if (type === 'encouragement') {
+        aiResponseEl.style.color = '#065F46'; // green-ish
+    } else {
+        aiResponseEl.style.color = '#111827'; // default dark
+    }
+
+    // Set the message text — persists until replaced
+    aiResponseEl.textContent = text;
 }
 
 nextBtn.addEventListener('click', () => {

@@ -44,12 +44,12 @@ const apologyComponents = {
         ],
         petition: [
             "Let’s move on from that one and keep working together.",
-            "Shall we continue with the next clue together?",
+            "Let's keep going! You've got this!",
             "Let’s keep going and try the next one.",
-            "We can move past that and focus on the next clue.",
+            "We can move past that and focus on the next one.",
             "Let’s continue and see how the next one goes.",
-            "Onward to the next clue! We've got this.",
-            "Let’s tackle the next clue together.",
+            "We'll do better on the next clue. We got this!",
+            "We're gonna crush the next clue.",
             "We can move forward and try again."
         ]
     },
@@ -99,7 +99,7 @@ const apologyComponents = {
             "Next...",
             "Let’s continue.",
             "Onward.",
-            "So next clue, I guess...",
+            "So next clue will be better, I guess...",
             "Let's just keep going.",
             "Shall we just move on?",
             "Time's ticking down, so let's go."
@@ -111,7 +111,7 @@ const apologyComponents = {
 export function makeAnApology(apologyType) {
     if (apologyType === "none") return null;
 
-    const source = apologyType === "good" ? GOOD_APOLOGIES : BAD_APOLOGIES;
+    const source = apologyType === "good" ? apologyComponents.good : apologyComponents.bad;
 
     // Helper to pick a random element from an array
     const pick = arr => arr[Math.floor(Math.random() * arr.length)];
