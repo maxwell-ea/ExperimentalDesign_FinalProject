@@ -1,5 +1,7 @@
 //logger.js
 // Log participant info
+import {sha256} from "js-sha256";
+
 export let participantInfo = {};
 export let gameLogs = []; // store all boards
 
