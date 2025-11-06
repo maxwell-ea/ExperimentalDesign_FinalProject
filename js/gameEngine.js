@@ -120,11 +120,20 @@ const AI_MEMORY_RESPONSES = {
     }
 };
 
+const emojiScale = {
+    '🤗': 5, // very positive
+    '😌': 4, // positive
+    '😐': 3, // neutral
+    '😔': 2, // negative
+    '😠': 1  // very negative
+};
+
 // --- Element references ---
 const app = document.getElementById('app');
 const nextBtn = document.getElementById('nextBtn');
 const boardScreen = document.getElementById('boardScreen');
 const statusEl = document.getElementById('status');
+statusEl.style.fontSize = '24px';
 
 // Create a container for the board + info
 const boardContainer = document.createElement('div');
@@ -219,16 +228,28 @@ emojiWrapper.style.gap = '8px';
 reactionContainer.appendChild(emojiWrapper);
 
 emojis.forEach(emoji => {
+    const btnContainer = document.createElement('div');
+    btnContainer.style.display = 'flex';
+    btnContainer.style.flexDirection = 'column';
+    btnContainer.style.alignItems = 'center';
+
     const btn = document.createElement('button');
     btn.textContent = emoji;
     btn.classList.add('reaction-btn');
-    btn.style.fontSize = '28px';
+    btn.style.fontSize = '28px'; // slightly larger for visual impact
     btn.style.cursor = 'pointer';
     btn.style.border = 'none';
     btn.style.background = 'transparent';
     btn.style.transition = 'transform 0.2s';
     btn.addEventListener('mouseenter', () => btn.style.transform = 'scale(1.3)');
     btn.addEventListener('mouseleave', () => btn.style.transform = 'scale(1.0)');
+
+    // Numeric label (Likert scale)
+    const numLabel = document.createElement('div');
+    numLabel.textContent = emojiScale[emoji];
+    numLabel.style.fontSize = '10px';
+    numLabel.style.color = '#9CA3AF'; // Tailwind gray-400
+    numLabel.style.marginTop = '2px';
 
     // Listener for player reaction
     btn.addEventListener('click', () => {
@@ -238,13 +259,23 @@ emojis.forEach(emoji => {
         resumeGame();
     });
 
-    emojiWrapper.appendChild(btn);
+    // Add button + label into container
+    btnContainer.appendChild(btn);
+    btnContainer.appendChild(numLabel);
+
+    emojiWrapper.appendChild(btnContainer);
 });
 
 boardContainer.appendChild(reactionContainer);
 
 // Finally, append the whole container to boardScreen
 boardScreen.appendChild(boardContainer);
+
+// Practice survey elements
+const practiceSurveyScreen = document.getElementById('practiceSurveyScreen');
+const practiceSurveyConfirm = document.getElementById('practiceSurveyConfirm');
+const practiceSurveyConfirmYes = document.getElementById('practiceSurveyConfirmYes');
+const practiceSurveyConfirmNo = document.getElementById('practiceSurveyConfirmNo');
 
 // Survey screens and buttons
 const miniSurveyScreen = document.getElementById('miniSurveyScreen');
@@ -262,6 +293,7 @@ const finalScreen = document.getElementById('finalScreen');
 let currentBoardIndex = 0; //keeps track of current board index
 let currentBoard = null; // variable to be set later to hold the actual board object created for each game
 let currentBoardData = null; // variable to be set later to hold data for the current board
+let isTutorial = false;
 const blockSize = 3; // number of boards/games per round/block
 const participantBoards = generateParticipantBoards(BOARDS/*,  optional seed for testing 42*/);
 const totalBoards = participantBoards.length;
@@ -278,7 +310,8 @@ let timeRemaining = timeLimit;
 let currentClue = null; // Current clue object
 let currentGuessedWords = []; // Words guessed for this clue
 let currentClueMaxGuesses = 0;
-let boardClueHistory = []; // Array to store clues & guessed words for the current board
+let boardClueHistory = []; // store clues & guessed words for the current board
+let boardMistakesHistory = []; // tracks AI apologies and player emoji responses
 
 // --- Game flow variables ---
 let experimentEndCallback = null;
@@ -320,12 +353,18 @@ function showBoard(index) {
     // --- Reset counters first ---
     boardPoints = 0;
     tilesFlipped = { good: 0, bad: 0, neutral: 0 };
-    const greeting = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
-    showAIResponse(greeting, { type: 'info'});
     updateDisplay();
+    enableNextBtn();
 
     // --- Render the board ---
     currentBoardData = participantBoards[index];
+    isTutorial = currentBoardData.metadata.isTutorial;
+
+    const teammateIcon = currentBoardData.metadata.teammateIcon || '🤖';
+    const greeting = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+    showAIResponse(`${teammateIcon} ${greeting}`, { type: 'info' });
+
+    console.log(isTutorial);
     currentBoard = new Board(currentBoardData, (tileType, pointsEarned, tileWord) => {
         boardPoints += pointsEarned;
         tilesFlipped[tileType] += 1;
@@ -335,6 +374,8 @@ function showBoard(index) {
             currentGuessedWords.push(tileWord);
         }
 
+        const icon = currentBoardData.metadata.teammateIcon || '🤖';
+
         if (tileType === 'bad') {
             apologyCount++;
             playerMadeError = true;
@@ -343,27 +384,26 @@ function showBoard(index) {
             if (apologyText) {
                 pauseGameForApology();
                 showReactionPanel();
-                showAIResponse(apologyText, { type: 'apology'});
-                // boardClueHistory.push({ aiResponse: apologyText, responseType: 'apology' });
+                showAIResponse(`${icon} ${apologyText}`, { type: 'apology' });
             } else {
-                showAIResponse("", { type: 'apology'});
+                showAIResponse(`${icon}`, { type: 'apology' });
             }
         } else if (tileType === 'good') {
             if (currentBoardData.metadata.apologyType === 'good') {
                 const encouragement = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
-                showAIResponse(encouragement, { type: 'encouragement'});
+                showAIResponse(`${icon} ${encouragement}`, { type: 'encouragement' });
             }
             else if (currentBoardData.metadata.apologyType === 'bad') {
                 const acknowledgement = ACKNOWLEDGEMENTS[Math.floor(Math.random() * ACKNOWLEDGEMENTS.length)];
-                showAIResponse(acknowledgement, { type: 'encouragement'});
+                showAIResponse(`${icon} ${acknowledgement}`, { type: 'encouragement' });
             }
             else{
                 const encouragement = "✅";
-                showAIResponse(encouragement, { type: 'encouragement'});
+                showAIResponse(`${icon} ${encouragement}`, { type: 'encouragement' });
             }
 
         } else {
-            showAIResponse("", { type: 'apology'});
+            showAIResponse(`${icon}`, { type: 'apology' });
         }
 
         updateDisplay();
@@ -386,7 +426,7 @@ function showBoard(index) {
     currentGuessedWords = [];
     playerMadeError = false;  // ensure no leftover error
     currentClue = getNextClue(
-        currentBoardIndex,           // boardNumber (1-indexed)
+        currentBoardData.boardNumber,           // boardNumber (1-indexed)
         currentBoardData.metadata.errorRate,  // low/medium/high
         playerMadeError,                                // playerMadeError initially false
         boardClueHistory                       // clue history for filtering
@@ -400,13 +440,36 @@ function showBoard(index) {
     }
 
     // Update round/board status
-    const roundNumber = Math.floor(index / blockSize) + 1;
-    const boardNumber = (index % blockSize) + 1;
-    statusEl.textContent = `Teammate ${roundNumber} — Board ${boardNumber} of ${blockSize}`;
-    nextBtn.style.display = 'inline-block';
+    if (!isTutorial) {
+        const roundNumber = Math.floor((index-1) / blockSize) + 1;
+        const boardNumber = ((index-1) % blockSize) + 1;
+        statusEl.textContent = `Teammate ${roundNumber} — Board ${boardNumber} of ${blockSize}`;
+        nextBtn.style.display = 'inline-block';
+    } else {
+        statusEl.textContent = `Tutorial Helper — Practice Board`;
+        nextBtn.style.display = 'inline-block';
+    }
 
     // --- Start timer ---
     startTimer(timeLimit); // or any duration you'd like
+}
+
+// Called when user confirms the survey. Only advances to next board (no logging).
+function proceedToNextBoard() {
+
+    // Reset data for the next board
+    boardPoints = 0;
+    tilesFlipped = { good: 0, bad: 0, neutral: 0 };
+    boardClueHistory = [];
+    boardMistakesHistory = [];
+    nextBtnFlashInterval = null;
+    apologyCount = 0;
+
+    updateDisplay();
+
+    // Move to next board index and show it
+    currentBoardIndex++;
+    showBoard(currentBoardIndex);
 }
 
 // Called at the moment the board ends (Next clicked OR timer expires).
@@ -422,27 +485,43 @@ function finishBoard(reason = 'user') {
     const totalTimeSeconds = timeLimit - timeRemaining;
 
     // Log immediately
-    logBoardResult(currentBoardData.boardIndex, currentBoardData.metadata.apologyType,
-        currentBoardData.metadata.errorRate, boardPoints, { ...tilesFlipped }, totalTimeSeconds, reason,
-        boardClueHistory);
+    if (!isTutorial) {
+        logBoardResult(
+            currentBoardData.boardNumber,
+            currentBoardData.metadata.apologyType,
+            currentBoardData.metadata.errorRate,
+            boardPoints,
+            { ...tilesFlipped },
+            totalTimeSeconds,
+            reason,
+            boardClueHistory,
+            boardMistakesHistory
+        );
+    }
 
     // Stop next button flashing and freeze board input
     stopNextBtnFlashing()
     if (currentBoard) currentBoard.disableClicks = true;
+    disableNextBtn();
 
     // Determine message and color based on state
     let message = 'Board Complete!';
     let color = '#111827'; // default black for timeout or generic
 
-    if (reason === 'timeout') {
-        message = "Time's up!";
+    if (isTutorial) {
+        message = "Tutorial Complete!";
         color = '#111827'; // black
-    } else if (tilesFlipped.good >= 6) {
-        message = 'All good words found!';
-        color = '#3B82F6'; // blue
-    } else if (tilesFlipped.bad >= 6) {
-        message = 'All bad words found!';
-        color = '#B91C1C'; // red
+    } else {
+        if (reason === 'timeout') {
+            message = "Time's up!";
+            color = '#111827'; // black
+        } else if (tilesFlipped.good >= 6) {
+            message = 'All good words found!';
+            color = '#3B82F6'; // blue
+        } else if (tilesFlipped.bad >= 6) {
+            message = 'All bad words found!';
+            color = '#B91C1C'; // red
+        }
     }
 
     // --- Show overlay ---
@@ -467,34 +546,48 @@ function finishBoard(reason = 'user') {
 
         const nextIndex = currentBoardIndex + 1;
 
-        if (nextIndex >= totalBoards) {
+        if(isTutorial) {
+            // Hide tutorial board
             boardScreen.style.display = 'none';
-            finalSurveyScreen.style.display = 'block';
-        } else if (nextIndex % blockSize === 0) {
-            boardScreen.style.display = 'none';
-            mediumSurveyScreen.style.display = 'block';
-        } else {
-            boardScreen.style.display = 'none';
-            miniSurveyScreen.style.display = 'block';
+
+            // Show practice survey
+            practiceSurveyScreen.style.display = 'block';
+
+            // Confirm Yes/No buttons
+            practiceSurveyConfirmYes.onclick = () => {
+                practiceSurveyConfirm.style.display = 'none';
+                practiceSurveyScreen.style.display = 'none';
+                boardScreen.style.display = 'flex';
+                proceedToNextBoard();
+            };
+
+            practiceSurveyConfirmNo.onclick = () => {
+                practiceSurveyConfirm.style.display = 'none';
+            };
+
+            // Show confirm overlay when clicking "Continue" on practice survey
+            const practiceSurveyContinueBtn = document.getElementById('practiceSurveyContinueBtn');
+            practiceSurveyContinueBtn.onclick = () => {
+                practiceSurveyConfirm.style.display = 'block';
+            };
+        }
+
+        else {
+            // For discrepancy between tutorial and other boards
+            let gameIndex = nextIndex - 1;
+
+            if (nextIndex >= totalBoards) {
+                boardScreen.style.display = 'none';
+                finalSurveyScreen.style.display = 'block';
+            } else if (gameIndex % blockSize === 0) {
+                boardScreen.style.display = 'none';
+                mediumSurveyScreen.style.display = 'block';
+            } else {
+                boardScreen.style.display = 'none';
+                miniSurveyScreen.style.display = 'block';
+            }
         }
     }, 3000);
-}
-
-// Called when user confirms the survey. Only advances to next board (no logging).
-function proceedToNextBoard() {
-
-    // Reset data for the next board
-    boardPoints = 0;
-    tilesFlipped = { good: 0, bad: 0, neutral: 0 };
-    boardClueHistory = [];
-    nextBtnFlashInterval = null;
-    apologyCount = 0;
-
-    updateDisplay();
-
-    // Move to next board index and show it
-    currentBoardIndex++;
-    showBoard(currentBoardIndex);
 }
 
 // --- Timer display and logic ---
@@ -532,11 +625,15 @@ function pauseGameForApology() {
 
     // Disable tile clicks
     if (currentBoard) currentBoard.disableClicks = true;
+
+    // Disable next button
+    disableNextBtn();
 }
 
 function resumeGame() {
     startTimer(timeRemaining);
     if (currentBoard) currentBoard.disableClicks = false;
+    enableNextBtn();
 }
 
 function showReactionPanel() {
@@ -562,8 +659,18 @@ function handleAIResponseToReaction(emoji) {
         ? `${baseResponse} ${memoryResponse}`
         : baseResponse;
 
+    const icon = currentBoardData.metadata.teammateIcon || '🤖';
+
     // Display AI’s follow-up
-    showAIResponse(finalResponse, { type: 'apology' });
+    showAIResponse(`${icon} ${finalResponse}`, { type: 'apology' });
+
+    // Log mistake
+    boardMistakesHistory.push({
+        apologyCount,
+        aiResponse: finalResponse,
+        userResponseEmoji: emoji,
+        userResponseNumeric: emojiScale[emoji] // numeric version
+    });
 }
 
 // --- Next button logic ---
@@ -582,15 +689,24 @@ function stopNextBtnFlashing() {
     }
 }
 
-// function clearAIResponse() {
-//     if (aiResponseEl) aiResponseEl.textContent = '';
-// }
+// --- Next button enable/disable ---
+function disableNextBtn() {
+    nextBtn.disabled = true;
+    nextBtn.style.opacity = '0.5'; // visual cue
+    nextBtn.style.cursor = 'not-allowed';
+}
 
-function showAIResponse(text, {type = 'info'} = {}) {
+function enableNextBtn() {
+    nextBtn.disabled = false;
+    nextBtn.style.opacity = '1';
+    nextBtn.style.cursor = 'pointer';
+}
+
+function showAIResponse(text, { type = 'info' } = {}) {
     if (!aiResponseEl) return;
 
-    // Clear previous text (so new messages replace old ones)
-    aiResponseEl.textContent = '';
+    // Clear previous text
+    aiResponseEl.innerHTML = '';
 
     // Style tweaks per message type
     if (type === 'apology') {
@@ -601,9 +717,34 @@ function showAIResponse(text, {type = 'info'} = {}) {
         aiResponseEl.style.color = '#111827'; // default dark
     }
 
-    // Set the message text — persists until replaced
-    aiResponseEl.textContent = text;
+    // --- Extract emoji if present at start ---
+    const emojiMatch = text.match(/^([\p{Emoji}\p{Extended_Pictographic}]+)/u);
+    let emojiPart = '';
+    let messagePart = text;
+
+    if (emojiMatch) {
+        emojiPart = emojiMatch[1];
+        messagePart = text.slice(emojiPart.length).trim();
+    }
+
+    // --- Create emoji span ---
+    if (emojiPart) {
+        const emojiSpan = document.createElement('span');
+        emojiSpan.textContent = emojiPart;
+        emojiSpan.style.fontSize = '28px';
+        emojiSpan.style.fontStyle = 'normal';
+        emojiSpan.style.marginRight = '6px';
+        aiResponseEl.appendChild(emojiSpan);
+    }
+
+    // --- Create message span ---
+    const messageSpan = document.createElement('span');
+    messageSpan.textContent = messagePart;
+    messageSpan.style.fontSize = '16px';
+    messageSpan.style.fontStyle = 'italic';
+    aiResponseEl.appendChild(messageSpan);
 }
+
 
 nextBtn.addEventListener('click', () => {
     // If flashing, stop flashing
@@ -624,7 +765,7 @@ nextBtn.addEventListener('click', () => {
 
     // Get next clue
     currentClue = getNextClue(
-        currentBoardIndex,
+        currentBoardData.boardNumber,
         currentBoardData.metadata.errorRate,
         playerMadeError,
         boardClueHistory

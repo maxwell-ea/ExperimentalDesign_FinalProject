@@ -14,13 +14,19 @@
 
 <body>
 
+<!-- Load sha256 first -->
+<script src="node_modules/js-sha256/build/sha256.min.js"></script>
+
+<!-- Then your ES module code -->
+<script type="module" src="js/logger.js"></script>
+
 <!-- Start / Title Screen -->
 <div id="startScreen" style="display: block; text-align: left; padding: 20px; max-width: 600px; margin: auto;">
-    <h1 style="text-align: center; margin-bottom: 20px;">Study on Human Collaboration with an Autonomous Teammate</h1>
+    <h1 style="text-align: center; margin-bottom: 20px;">The Mad HATter Study</h1>
 
     <div class="info-section">
         <h2>Objective of This Study</h2>
-        <p>We want to explore how humans and AI work collaboratively as a team through a word association game.</p>
+        <p>We want to explore how humans and AI work collaboratively as Human-Agent Teams (HATs), through a word association game.</p>
     </div>
 
     <div class="info-section">
@@ -91,10 +97,13 @@
 <!-- Starting Survey Screen -->
 <div id="startSurveyScreen" style="display: none; text-align: center; padding: 20px; max-width: 600px; margin: auto;">
     <h2>Initial Survey</h2>
-    <p>Please <a href="https://docs.google.com/forms/d/e/1FAIpQLScK3sKW-dwODj4pO66I3w_-NzyNVYjgepkN-V3sdlCkIqnjtA/viewform"
-                 target="_blank">fill out the initial survey questions.</a>
-        You will continue to use this form throughout the experiment to answer questions about your experience.</p>
-    <button id="startSurveyContinueBtn" class="btn">Continue</button>
+    <p>Please fill out the intial survey questions. You will continue to use this form throughout the experiment to
+        answer questions about your experience. <br><br>
+        Access the survey here: <a href="https://docs.google.com/forms/d/e/1FAIpQLScK3sKW-dwODj4pO66I3w_-NzyNVYjgepkN-V3sdlCkIqnjtA/viewform"
+                                   target="_blank">survey link.</a> (Click, and it will open a new tab with the survey.)
+    </p>
+    <button id="confirmSurveyOpenedBtn" class="btn">I have opened the survey</button>
+    <button id="startSurveyContinueBtn" class="btn" style="display:none;">Continue</button>
 </div>
 
 <!-- Instructions Screen -->
@@ -160,9 +169,6 @@
         <ul>
             <li>There will be 1 practice game followed by 9 real games. </li>
             <li>You will play with 3 different autonomous teammates, each one for 3 games in a row. </li>
-            <li>After each board, you will give a quick response on how the game went.</li>
-            <li>After playing with each teammate, you will be asked to fill out a short survey.</li>
-            <li>After the final board and playing with all three teammates, you will fill out a longer, final survey.</li>
             <li>All of your responses will be confidential and anonymized once data collection is complete.</li>
             <li><b>Reminder:</b> Your participation is optional, and you may exit the game and surveys at any time.</li>
         </ul>
@@ -173,10 +179,39 @@
     </div>
 </div>
 
-<!-- Tutorial Board -->
-<div id="tutorialBoardScreen" style="display:none;">
-    <div id="tutorialApp" style="text-align:center; padding:20px;"></div>
-    <button id="tutorialNextBtn" class="btn">Next</button>
+<!-- Tutorial Screen -->
+<div id="tutorialScreen" style="display: none; text-align: left; padding: 20px; max-width: 700px; margin: auto;">
+    <h1 style="text-align: center; margin-bottom: 20px;">Game Tutorial</h1>
+
+    <div class="info-section">
+        <h2>🟦 Start of the Board</h2>
+        <p>Here’s what the board looks like at the start of a round! None of the words are revealed yet, and you will have 2 minutes to try and guess all the right words. <br> <br> </p>
+        Two minutes was more than enough time for all our pilot testers, so don't freak out about being timed and just go at your own pace. It's not for a grade! 😉<br> <br>
+        <img src="assets/start_game.png" alt="Board at game start" style="width:100%; max-width:500px; margin: 0px auto; display: block;" >
+    </div>
+
+    <div class="info-section">
+        <h2>💡 Guessing Words</h2>
+        <p>Your teammate gives a clue — a word plus a number — then you click the card to flip words you think match. You can only choose the number of cards as the number given in the clue. <br> <br> </p>
+        <img src="assets/clues_flips.png" alt="Board with clue and blue words" style="width:100%; max-width:500px; margin: 0px auto; display: block;" >
+    </div>
+
+    <div class="info-section">
+        <h2>🤨 Confusing Clues</h2>
+        <p>If a teammate gives you a clue that you don't understand or think is unclear, you can click "Next" to choose the next clue. You can also choose less words than the number given and click "Next" when you aren't sure about the remaining words that go with that clue. <br> <br>
+            In this example, the clue given was "Orchard (2)". Apple was chosen, but the second word was unclear. In this case, you can move on to the next clue with "Next". <br> <br> </p>
+        <img src="assets/confusing_clues.png" alt="Board with clue and only 1 of 2 words flipped." style="width:100%; max-width:500px; margin: 0px auto; display: block;" >
+    </div>
+
+    <div class="info-section">
+        <h2>❌ Mistakes & Apologies</h2>
+        <p>Some words are good, some are neutral, and some are bad. If you pick a wrong word, your teammate might apologize for the unclear clue. You’ll then respond using the emoji panel to tell them how you feel about their apology. They are numbered 1-5 to represent "very happy" to "very displeased". <br> <br> </p>
+        <img src="assets/mistakes_apologies.png" alt="Board with wrong answer flipped, apology, and emojis" style="width:100%; max-width:500px; margin: 0px auto; display: block;" >
+    </div>
+
+    <div style="display: flex; justify-content: space-between; margin-top: 20px; max-width: 300px;">
+        <button id="tutorialContinueBtn" class="btn">Start Practice Game →</button>
+    </div>
 </div>
 
 <!-- Practice Board Survey -->
@@ -204,7 +239,7 @@
 <div id="miniSurveyScreen" style="display: none; text-align: center; padding: 20px;">
     <h2>Board Review</h2>
     <p>Please answer the two questions related to your experience with the game you just completed. <br>
-        Click "Continue" when done.</p>
+        Click "Continue" when you've answered the questions and are ready to begin the next game.</p>
     <button id="miniSurveyContinueBtn" class="btn">Continue</button>
 
     <!-- Confirmation overlay -->
@@ -217,8 +252,11 @@
 
 <!-- Medium Survey Screen -->
 <div id="mediumSurveyScreen" style="display: none; text-align: center; padding: 20px;">
-    <h2>Block Survey</h2>
-    <p>Please fill out the survey for this round. Click "Continue" when done.</p>
+    <h2>Board Review and End of Round Survey</h2>
+    <p>Please answer the two questions related to your experience with the game you just completed, and fill out the short survey for this round. <br> <br>
+        Click "Continue" when you have completed the survey and are ready to start the next round
+
+    </p>
     <button id="mediumSurveyContinueBtn" class="btn">Continue</button>
 
     <div id="mediumSurveyConfirm" style="display:none; margin-top: 10px;">
@@ -231,9 +269,7 @@
 <!-- Final Survey Screen -->
 <div id="finalSurveyScreen" style="display: none; text-align: center; padding: 20px;">
     <h2>Final Survey</h2>
-    <p>Please fill out the "Practice Round - End of Round Surveys" and "Pilot Study Responses". <br>
-        For this pilot, you can skip "Practice Round Survey Responses - Board 1" (the first survey after the
-        initial one).  <br>
+    <p>Please fill out the End of Round Survey for the final teammate and the Mad HATter Closeout Survey.  <br>
         Click "Finish" when done.</p>
     <button id="finalSurveyContinueBtn" class="btn">Finish</button>
 
@@ -247,7 +283,7 @@
 <!-- Final Screen -->
 <div id="finalScreen" style="display: none; text-align: center; padding: 20px;">
     <h2>Thank you!</h2>
-    <p>You have finished the experiment.</p>
+    <p>You have finished the experiment! 🥳</p>
 </div>
 
 <script type="module" src="js/main.js"></script>

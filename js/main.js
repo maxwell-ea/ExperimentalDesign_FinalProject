@@ -3,7 +3,6 @@
 
 import { setupConsentScreen, participantInfo } from './logger.js';
 import { startGame } from './gameEngine.js';
-import { startTutorial } from './tutorial.js';
 
 // Helper function for preventing user reload once they have given consent to the experiment (so they don't lose progress)
 function preventReloadsDuringExperiment() {
@@ -48,13 +47,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const consentScreen = document.getElementById('consentScreen');
     const startSurveyScreen = document.getElementById('startSurveyScreen');
     const instructionsScreen = document.getElementById('instructionsScreen');
-    const boardScreen = document.getElementById('boardScreen');
+    const tutorialScreen = document.getElementById('tutorialScreen');
+    const tutorialContinueBtn = document.getElementById('tutorialContinueBtn');
 
     // Buttons
     const startBtn = document.getElementById('startExperimentBtn'); // from start screen
     const consentBackBtn = document.getElementById('backToStartBtn'); // back to start screen
     const startSurveyContinueBtn = document.getElementById('startSurveyContinueBtn');
     const instructionsContinueBtn = document.getElementById('instructionsContinueBtn'); // start game
+    const confirmSurveyOpenedBtn = document.getElementById('confirmSurveyOpenedBtn');
+
+    confirmSurveyOpenedBtn.addEventListener('click', () => {
+        // User confirms they opened survey
+        confirmSurveyOpenedBtn.style.display = 'none'; // hide the confirm button
+        startSurveyContinueBtn.style.display = 'inline-block'; // show original Continue button
+    });
 
     // --- Start screen button ---
     startBtn.addEventListener('click', () => {
@@ -88,17 +95,18 @@ document.addEventListener('DOMContentLoaded', () => {
         startScreen.style.display = 'block';
     });
 
-    // --- Start tutorial after instructions and start game after tutorial is complete ---
     instructionsContinueBtn.addEventListener('click', () => {
         instructionsScreen.style.display = 'none';
+        tutorialScreen.style.display = 'block';
+    });
 
-        startTutorial(() => {
-            console.log("Tutorial complete — starting game"); // <-- debug line
-            // Start game
-            startGame(() => {
-                console.log("Experiment finished — disabling reload block");
-                disableProtection(); // Allow reloads again after final screen
-            });
+    // Start the practice game after tutorial
+    tutorialContinueBtn.addEventListener('click', () => {
+        tutorialScreen.style.display = 'none';
+        // Start the game (your existing startGame function will handle practice board first)
+        startGame(() => {
+            console.log("Experiment finished — disabling reload block");
+            disableProtection(); // Allow reloads again after final screen
         });
     });
 });

@@ -68,18 +68,18 @@ const apologyComponents = {
             "But I only kind of see what you did there...",
             "You could guess a little better too, you know.",
             "I mean, I can barely see how you came up with that.",
-            "But your guess was certainly... a choice.",
-            "But you did your thing.",
+            "Your guess was certainly... a choice.",
+            "You just did your thing.",
             "If only you could sense my genius—then you could guess it perfectly.",
             "I don't know what I expected.",
-            "But at the end of the day, it’s your call."
+            "At the end of the day, it’s your call."
         ],
         regret: [
             "I guess this is the part where I say sorry.",
             "Anyway, I guess I'm sorry, if you care.",
-            "We're a little off, but it's fine.",
-            "Could’ve gone worse, I suppose.",
-            "No matter whose fault it is, it's just a small mistake.",
+            "We're only a little off track, so it's fine.",
+            "It could’ve gone worse, I suppose.",
+            "Anyway, no matter whose fault it is, it's just a small mistake.",
             "I'll just keep giving clues, and you just try to keep up.",
             "Anyway, it's not a big deal.",
             "Let’s just pretend that one didn’t happen."
@@ -92,17 +92,16 @@ const apologyComponents = {
             "I just need to think slower, like you do.",
             "I'll try and adjust for your abilities.",
             "Perhaps the next one will work if I just keep trying.",
-            "I'll try to dumb it down next time, okay?"
+            "I'll try to dumb it down next time."
         ],
         petition: [
             "Let's just move on.",
-            "Next...",
+            "Next clue...",
             "Let’s continue.",
-            "Onward.",
-            "So next clue will be better, I guess...",
             "Let's just keep going.",
             "Shall we just move on?",
-            "Time's ticking down, so let's go."
+            "Time's ticking down, so let's go.",
+            "Let's move on before I lose more neurons."
         ]
     }
 };
