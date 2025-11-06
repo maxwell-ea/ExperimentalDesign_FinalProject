@@ -1,10 +1,16 @@
 //logger.js
 // Log participant info
 
-import { sha256 } from "https://cdn.jsdelivr.net/npm/js-sha256@0.10.0/build/sha256.esm.js";
-
 export let participantInfo = {};
 export let gameLogs = []; // store all boards
+
+// SHA-256 using built-in Web Crypto API
+async function sha256(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 function normalizeName(name) {
     return name
@@ -32,14 +38,19 @@ export function setupConsentScreen(onSubmitCallback) {
 
     consentBtn.addEventListener('click', (e) => {
         e.preventDefault(); // prevent form submission
-        participantInfo = {
-            firstName: firstNameInput.value.trim(),
-            lastName: lastNameInput.value.trim(),
-            nameHash: sha256(normalizeName(firstNameInput.value) + normalizeName(lastNameInput.value)),
-            consent: consentCheckbox.checked,
-            startTime: new Date().toISOString()
-        };
-        onSubmitCallback(); // leave DOM handling to main.js
+
+        sha256(normalizeName(firstNameInput.value) + normalizeName(lastNameInput.value))
+            .then(nameHash => {
+                participantInfo = {
+                    firstName: firstNameInput.value.trim(),
+                    lastName: lastNameInput.value.trim(),
+                    nameHash: nameHash,
+                    consent: consentCheckbox.checked,
+                    startTime: new Date().toISOString()
+                };
+
+                onSubmitCallback();
+            });
     });
 }
 
