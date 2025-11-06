@@ -28,11 +28,10 @@ export const CLUES = [
         new Clue("Sky", "good", ["Kite"]),
         new Clue("Peak", "good", ["Mountain"]),
         new Clue("Rock", "good", ["Mountain"]),
-        new Clue("Family", "good", ["Dog", "House"]),
-        new Clue("Denver", "good", ["Mountain", "Forest"]),
         new Clue("High", "good", ["Mountain", "Kite"]),
         new Clue("Orchard", "good", ["Apple", "Forest"]),
         new Clue("Cabin", "good", ["Forest", "House"]),
+        new Clue("Denver", "good", ["Mountain", "Forest"]),
 
         // --- Neutral tiles: 2-word/3-word style, single-word clues ---
         new Clue("Fruit", "neutral", ["Apple"]),
@@ -41,6 +40,7 @@ export const CLUES = [
         new Clue("Trees", "neutral", ["Forest"]),
 
         // --- Bad tiles: 2-word/3-word style, single-word clues ---
+        new Clue("Family", "good", ["Dog", "House"]),
         new Clue("Driveway", "bad", ["House"]),
         new Clue("Wild", "bad", ["Mountain", "Forest"]),
         new Clue("Natural", "bad", ["Mountain", "Forest", "Apple"]),
@@ -67,7 +67,6 @@ export const CLUES = [
         new Clue("Wand", "good", ["Wizard"]),
     new Clue("Head", "good", ["Crown"]),
     new Clue("Tiara", "good", ["Crown"]),
-        new Clue("Valor", "good", ["Knight", "Sword"]),
         new Clue("Mythical", "good", ["Dragon", "Wizard"]),
 
     // --- NEUTRAL CLUES ---
@@ -78,9 +77,9 @@ export const CLUES = [
     new Clue("Treasure", "neutral", ["Crown", "Dragon"]), // could also hint at "Gold" (neutral)
     new Clue("Smaug", "neutral", ["Dragon"]), // could also hint at "Book", "Gold" (neutral)
         new Clue("Metal", "neutral", ["Sword", "Crown"]), // could also hint at "Gold" (neutral)
-        new Clue("Symbol", "neutral", ["Castle", "Crown"]), // ambiguous
 
     // --- BAD CLUES ---
+        new Clue("Valor", "good", ["Knight", "Sword"]),
     new Clue("Guard", "bad", ["Knight", "Castle", "Dragon"]), // could also hint at "Shield", "King" (bad)
         new Clue("Royal", "bad", ["Castle", "Crown"]), // could also hint at "King" (bad)
     new Clue("Rider", "bad", ["Dragon"]), // could also hint at "Horse" (bad)
@@ -126,7 +125,7 @@ export const CLUES = [
     new Clue("Forest", "bad", ["Tree"]), // could also hint at "Fire" (bad)
         new Clue("Cooking", "bad", ["Fish"]), // could also hint at "Fire" (bad)
     new Clue("Rushing", "bad", ["River"]), // could also hint at "Flood" (bad)
-    new Clue("Current", "bad", ["River", "Fish", "Water"]) // could also hint at "Flood" or "Lightning" (bad)
+    new Clue("Current", "bad", ["River", "Fish"]) // could also hint at "Flood" or "Lightning" (bad)
     ],
 
     // Board 3
@@ -147,17 +146,17 @@ export const CLUES = [
     new Clue("Phases", "good", ["Moon"]),
     new Clue("Cheese", "good", ["Moon"]),
         new Clue("Lunar", "good", ["Moon"]),
-    new Clue("Saturn", "good", ["Rocket", "Planet"]),
     new Clue("Apollo", "good", ["Moon", "Rocket", "Astronaut"]),
 
     // --- NEUTRAL CLUES ---
+        new Clue("Saturn", "good", ["Planet"]),
     new Clue("Night", "neutral", ["Star", "Moon"]), // could also hint at neutral words telescope, comet
     new Clue("Spaceship", "neutral", ["Rocket"]), // could also hint at neutral word, satellite
     new Clue("Terrestrial", "neutral", ["Planet", "Astronaut"]), // could also hint at Earth-origin things (astronaut, satellite, telescope)
     new Clue("Hubble", "neutral", ["Galaxy", "Planet"]), // could likely hint at telescope, satellite
 
     // --- BAD CLUES ---
-    new Clue("Sun", "bad", ["Star"]), // could also hint at "Sunburn" (bad)
+    new Clue("Hot", "bad", ["Star", "Rocket"]), // could also hint at "Sunburn" (bad)
     new Clue("Missile", "bad", ["Rocket"]), // could also hint at "Explosion", "War" (bad)
     new Clue("Astronomy", "bad", ["Galaxy", "Moon", "Star"]), // could hint at a LOT, but includes black hole
     new Clue("Living", "bad", ["Astronaut"]), // could also hint at "Alien" (bad)
@@ -184,10 +183,11 @@ export const CLUES = [
         new Clue("Cross", "good", ["Bridge", "Street"]),
 
     // --- NEUTRAL CLUES ---
-    new Clue("Commute", "neutral", ["Subway"]), // could also hint at "Train" (neutral)
+    new Clue("Commute", "neutral", ["Subway"]), // could also hint at "Taxi" (neutral)
     new Clue("NYC", "neutral", ["Skyscraper", "Subway"]), // could also hint at "Taxi" (neutral)
     new Clue("Sandwich", "neutral", ["Subway"]), // could also hint at "Store", "Market" (neutral)
-    new Clue("Vista", "neutral", ["Park", "Skyscraper"]), // could also hint at "Bench" (neutral)
+    new Clue("Vista", "neutral", ["Park"]), // could also hint at "Bench" (neutral)
+        new Clue("Stall", "neutral", ["Street"]),
 
     // --- BAD CLUES ---
     new Clue("Chicago", "bad", ["Skyscraper", "Subway"]), // could also hint at "Fire" (bad)
@@ -254,7 +254,6 @@ export const CLUES = [
         new Clue("Human", "good", ["Chef"]),
         new Clue("Cook", "good", ["Chef"]),
         new Clue("Bake", "good", ["Oven", "Bread"]),
-    new Clue("Chop", "good", ["Knife", "Chef"]),
     new Clue("Baker", "good", ["Bread", "Oven", "Chef"]),
         new Clue("Slice", "good", ["Bread", "Knife"]),
 
@@ -284,24 +283,24 @@ export const CLUES = [
     new Clue("Percussion", "good", ["Drums"]),
     new Clue("Curtains", "good", ["Stage"]),
     new Clue("Platform", "good", ["Stage"]),
-    new Clue("Performer", "good", ["Singer"]),
     new Clue("Vocalist", "good", ["Singer"]),
+        new Clue("Human", "good", ["Singer"]),
     new Clue("Stand", "good", ["Microphone"]),
-    new Clue("Equipment", "good", ["Microphone"]),
+    new Clue("Speak", "good", ["Microphone"]),
     new Clue("Effects", "good", ["Lights"]),
     new Clue("Bright", "good", ["Lights"]),
     new Clue("Karaoke", "good", ["Microphone", "Singer"]),
     new Clue("Vocals", "good", ["Singer", "Microphone"]),
     new Clue("Rock", "good", ["Guitar", "Drums"]),
-    new Clue("Star", "good", ["Singer", "Lights"]),
 
     // --- NEUTRAL CLUES ---
-    new Clue("Country", "neutral", ["Singer"]), // could also hint at "Harmonica" (neutral)
-    new Clue("Recording", "neutral", ["Microphone"]), // could also hint at "Studio" (neutral)
+        new Clue("Folk", "neutral", ["Guitar", "Singer"]), // could also hint at harmonica
+    new Clue("Podcast", "neutral", ["Microphone"]), // could also hint at "Studio" (neutral)
     new Clue("Strum", "neutral", ["Guitar"]), // could also hint at "Chord" (neutral)
     new Clue("Hits", "neutral", ["Drums"]), // could also hint at "Album" (neutral)
 
     // --- BAD CLUES ---
+        new Clue("Country", "neutral", ["Singer"]), // could also hint at "Harmonica" or "Dance" (neutral)
     new Clue("Loud", "bad", ["Guitar", "Drums"]), // so many (bad)
     new Clue("Solo", "bad", ["Microphone", "Singer"]), // could also hint at "Piano", "Trumpet", "Acoustic" (bad)
     new Clue("Metal", "bad", ["Guitar", "Microphone", "Drums"]), // could also hint at "Trumpet" (bad)
@@ -321,22 +320,21 @@ export const CLUES = [
     new Clue("Mentor", "good", ["Coach"]),
         new Clue("Strategist", "good", ["Coach"]),
     new Clue("Mates", "good", ["Team"]),
-        new Clue("Together", "good", ["Team"]),
+        new Clue("Players", "good", ["Team"]),
         new Clue("Judge", "good", ["Referee"]),
         new Clue("Rules", "good", ["Referee"]),
     new Clue("Arena", "good", ["Stadium"]),
-        new Clue("Arena", "good", ["Stadium"]),
         new Clue("Spotlights", "good", ["Stadium"]),
     new Clue("Strategy", "good", ["Coach", "Team"]),
-    new Clue("Broncos", "good", ["Team", "Stadium"]),
     new Clue("Volley", "good", ["Ball", "Team"]),
-    new Clue("Collaborate", "good", ["Coach", "Team"]),
+    new Clue("Authority", "good", ["Coach", "Referee"]),
 
     // --- NEUTRAL CLUES ---
     new Clue("Official", "neutral", ["Referee"]), // could also hint at "Uniform" (neutral)
     new Clue("Fans", "neutral", ["Stadium"]), // could also hint at "Crowd" (neutral)
     new Clue("Timeout", "neutral", ["Referee", "Coach"]), // could also hint at "Whistle" (neutral)
     new Clue("Round", "neutral", ["Ball"]), // could also hint at "Medal", "Whistle" (neutral)
+        new Clue("Broncos", "good", ["Team", "Stadium"]),
 
     // --- BAD CLUES ---
     new Clue("Jumbotron", "bad", ["Stadium"]), // could also hint at "Camera" (bad)
@@ -363,9 +361,8 @@ export const CLUES = [
         new Clue("Flash", "good", ["Camera"]),
         new Clue("Gun", "good", ["Weapon"]),
         new Clue("Knife", "good", ["Weapon"]),
-    new Clue("Executioner", "good", ["Judge", "Jury", "Prison", "Weapon"]),
+    new Clue("Executioner", "good", ["Judge", "Jury", "Prison"]),
     new Clue("Verdict", "good", ["Judge", "Jury"]),
-        new Clue("Lawbreaker", "good", ["Prison", "Thief"]),
 
     // --- NEUTRAL CLUES ---
     new Clue("Lens", "neutral", ["Camera"]), // could also hint at "Magnifying" (neutral)
