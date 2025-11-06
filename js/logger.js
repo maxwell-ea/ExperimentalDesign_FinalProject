@@ -1,6 +1,8 @@
 //logger.js
 // Log participant info
 
+import { sha256 } from "https://cdn.jsdelivr.net/npm/js-sha256@0.10.0/build/sha256.esm.js";
+
 export let participantInfo = {};
 export let gameLogs = []; // store all boards
 
